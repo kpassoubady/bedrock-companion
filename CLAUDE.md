@@ -1,5 +1,5 @@
 # Project Overview
-This project was scaffolded using the `repo-init` skill. 
+This project is the hands-on lab companion for "Building Production-Ready Agents with Amazon Bedrock AgentCore".
 
 ## Directory Layout
 - `llm-context/`: Stores context for LLM agents.
@@ -9,3 +9,6 @@ TBD
 
 ## Content Guidelines
 TBD
+
+## Related Repositories
+- [bedrock-setup](https://github.com/kpassoubady/bedrock-setup) — Pre-class environment verification and installation steps.
