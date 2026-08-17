@@ -6,7 +6,7 @@ To build secure, production-grade agentic systems, you must decouple the executi
 
 The AgentCore Runtime provides a serverless execution environment specifically designed for hosting agent and tool code.
 
-*   **Session Isolation:** The primary security boundary is the dedicated microVM allocated for each user session. This prevents cross-tenant data leakage and ensures that the agent's state is completely isolated.
+*   **Session Isolation:** Runtime isolates compute for each session. Tenant safety still depends on authenticated user-to-session mapping, data partitioning, and authorization outside the microVM.
 *   **Scale and Flexibility:** It is designed for both real-time interactions with fast cold starts and asynchronous, long-running agent workloads that can operate for hours.
 *   **Execution Role Boundaries:** While Runtime isolates the compute session, the code inside the microVM runs under a specified IAM execution role. This role must be tightly scoped to least privilege. Using an overly broad development policy in production expands the blast radius if the agent is hijacked.
 *   **Tenant Mapping:** Session isolation does not authenticate the caller. Your application backend must validate the user and map them to a session ID before invoking the Runtime.
@@ -26,7 +26,7 @@ When architecting production agents, apply the following principles:
 1.  **Do not conflate session isolation with tenant isolation.** The application owns the user-to-session mapping.
 2.  **Tool calls do not bypass authorization.** A valid tool call routed through Gateway is not proof that the caller is allowed to perform the action. Downstream services must re-verify authorization.
 3.  **Assume component failure.** Runtime, Gateway, models, and downstream APIs can fail independently. Implement bounded retries and timeouts.
-4.  **Enforce bypass prevention.** Use resource policies or IAM conditions to prevent callers from bypassing the Gateway and invoking Runtime tools directly.
+4.  **Protect both directions.** Restrict Runtime ingress to the approved backend principal, restrict Gateway invocation to approved agent workloads, and require downstream business authorization.
 
 ### Component Comparison
 

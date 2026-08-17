@@ -1,0 +1,15 @@
+export AWS_REGION=us-west-2
+export AGENT_NAME=sf_case_team01_am
+export AGENT_RUNTIME_ID=
+export AGENT_RUNTIME_ARN=
+export EXECUTION_ROLE_ARN=arn:aws:iam::123456789012:role/assigned-runtime-role
+export RESTRICTED_POLICY_ARN=arn:aws:iam::123456789012:policy/assigned-runtime-policy
+export S3_BUCKET=assigned-agentcore-artifacts
+export S3_KEY=course/agent/deployment_package.zip
+export GATEWAY_URL=https://assigned-gateway.example.gateway.bedrock-agentcore.us-east-1.amazonaws.com/mcp
+export GATEWAY_TOOL_NAME=retail___get_order_status
+export MEMORY_ID=assigned-memory-id
+export ACTOR_ID=team01_am
+export MEMORY_SESSION_ID=sf-case-team01-am
+export ORDER_ID=ORD-1001
+export EXPECTED_ORDER_STATUS=SHIPPED
