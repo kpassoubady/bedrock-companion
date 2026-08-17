@@ -14,8 +14,8 @@ AgentCore costs are "emergent," stemming from Runtime compute, Gateway API calls
 
 A "hallucination loop" occurs when an agent enters an infinite cycle of flawed reasoning and failed tool calls. This drives up costs and risks operational failure.
 
-- **Deterministic Limits:** Always set hard constraints like `max-iterations` and `harness-timeout` to force termination if an agent fails to resolve a task.
-- **Circuit Breakers:** Implement circuit breakers at the Gateway layer to halt cascading errors if a downstream API fails or rate-limits the agent.
+- **Deterministic Limits:** Enforce maximum iterations and request deadlines in the agent harness or orchestration code. These are application controls, not Runtime lifecycle fields.
+- **Circuit Breakers:** Implement circuit breakers around downstream tool calls. Gateway centralizes access, but the application or service still owns failure thresholds and fallback behavior.
 
 ## Production Best Practices
 

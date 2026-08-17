@@ -1,111 +1,117 @@
 """
-Lab 05 — Solution: Verify Agent Memory Continuity
-Day 1: Breakout Lab
+Lab 05 - Verify Runtime invocation and AgentCore Memory continuity.
 
-Complete working example. Invokes the agent twice with the same actorId
-and sessionId to verify short-term memory continuity, then guides the
-student to inspect the trace in CloudWatch.
+The supplied Runtime must explicitly write and read AgentCore Memory using the
+actorId and memorySessionId fields in the payload.
 """
 import json
 import os
+import time
 import uuid
 
 import boto3
 
-# --- Configuration ---
-AGENT_RUNTIME_ARN = os.environ.get(
-    "AGENT_RUNTIME_ARN",
-    "arn:aws:bedrock-agentcore:us-east-1:123456789012:agent-runtime/LabAgent-Team01",
-)
-ACTOR_ID = os.environ.get("ACTOR_ID", "student-01")
-SESSION_ID = f"lab-session-{str(uuid.uuid4())[:8]}"
 AWS_REGION = os.environ.get("AWS_REGION", "us-east-1")
+AGENT_RUNTIME_ARN = os.environ.get("AGENT_RUNTIME_ARN", "")
+MEMORY_ID = os.environ.get("MEMORY_ID", "")
+ACTOR_ID = os.environ.get("ACTOR_ID", "")
+MEMORY_SESSION_ID = os.environ.get("MEMORY_SESSION_ID", f"memory-{uuid.uuid4()}")
+EXPECTED_TERM = os.environ.get("EXPECTED_TERM", "00001042")
+ORDER_ID = os.environ.get("ORDER_ID", "ORD-1001")
+EXPECTED_ORDER_STATUS = os.environ.get("EXPECTED_ORDER_STATUS", "SHIPPED")
 
-agentcore = boto3.client("bedrock-agentcore", region_name=AWS_REGION)
+
+def require_configuration():
+    required = {
+        "AGENT_RUNTIME_ARN": AGENT_RUNTIME_ARN,
+        "MEMORY_ID": MEMORY_ID,
+        "ACTOR_ID": ACTOR_ID,
+    }
+    missing = [name for name, value in required.items() if not value]
+    if missing:
+        raise SystemExit(f"CONFIG_MISSING: export {', '.join(missing)}")
 
 
-def invoke_agent(actor_id: str, session_id: str, message: str, invocation_num: int):
-    """Invoke the deployed agent and display the response.
+def read_response(response):
+    content_type = response.get("contentType", "")
+    body = response["response"]
+    if "text/event-stream" in content_type:
+        chunks = []
+        for raw_line in body.iter_lines(chunk_size=10):
+            line = raw_line.decode("utf-8").strip()
+            if line.startswith("data: "):
+                chunks.append(line[6:])
+        return "\n".join(chunks)
+    raw = body.read().decode("utf-8")
+    if content_type.startswith("application/json"):
+        return json.dumps(json.loads(raw), sort_keys=True)
+    return raw
 
-    Uses the same actorId and sessionId across invocations to demonstrate
-    short-term memory continuity. The AgentCore Memory resource automatically
-    provides conversation context for matching actorId + sessionId pairs.
-    """
-    print(f"\n{'─' * 50}")
-    print(f"  Invocation {invocation_num}")
-    print(f"  Actor: {actor_id} | Session: {session_id}")
-    print(f"  Message: {message}")
 
-    payload = json.dumps({"prompt": message}).encode("utf-8")
+def invoke(agentcore, prompt: str, runtime_session_id: str):
+    payload = {
+        "prompt": prompt,
+        "actorId": ACTOR_ID,
+        "memorySessionId": MEMORY_SESSION_ID,
+    }
+    response = agentcore.invoke_agent_runtime(
+        agentRuntimeArn=AGENT_RUNTIME_ARN,
+        runtimeSessionId=runtime_session_id,
+        runtimeUserId=ACTOR_ID,
+        contentType="application/json",
+        accept="application/json, text/event-stream",
+        payload=json.dumps(payload).encode("utf-8"),
+    )
+    text = read_response(response)
+    request_id = response.get("ResponseMetadata", {}).get("RequestId", "unknown")
+    print(f"RUNTIME_OK: request_id={request_id} runtime_session_id={runtime_session_id}")
+    print(text)
+    return text
 
-    # Uncomment to invoke your deployed agent:
-    # response = agentcore.invoke_agent_runtime(
-    #     agentRuntimeArn=AGENT_RUNTIME_ARN,
-    #     runtimeSessionId=session_id,
-    #     runtimeUserId=actor_id,
-    #     contentType="application/json",
-    #     payload=payload,
-    # )
-    #
-    # if "text/event-stream" in response.get("contentType", ""):
-    #     event_stream = response["response"]
-    #     for event in event_stream:
-    #         if "chunk" in event:
-    #             chunk = event["chunk"]["bytes"].decode("utf-8")
-    #             print(f"  Response: {chunk}")
-    # else:
-    #     body = response["response"].read()
-    #     print(f"  Response: {body.decode('utf-8')}")
 
-    # Simulated response for offline testing:
-    if invocation_num == 1:
-        print("  Response: I can help with that. What is your departure city?")
-    elif invocation_num == 2:
-        print("  Response: You are flying to Seattle next Monday. Shall I search for flights?")
-
-    trace_id = uuid.uuid4().hex[:16]
-    print(f"  Trace ID: {trace_id}")
-    return trace_id
+def wait_for_memory_events(agentcore):
+    deadline = time.time() + 30
+    while time.time() < deadline:
+        response = agentcore.list_events(
+            memoryId=MEMORY_ID,
+            actorId=ACTOR_ID,
+            sessionId=MEMORY_SESSION_ID,
+            includePayloads=True,
+            maxResults=100,
+        )
+        events = response.get("events", [])
+        if len(events) >= 2:
+            return events
+        time.sleep(3)
+    raise SystemExit("MEMORY_FAILED: fewer than two events were visible after 30 seconds")
 
 
 def main():
-    print("=" * 60)
-    print("  Agent Memory Continuity Verification")
-    print("=" * 60)
-    print(f"  Agent ARN: {AGENT_RUNTIME_ARN}")
-    print(f"  Actor ID:  {ACTOR_ID}")
-    print(f"  Session:   {SESSION_ID}")
-    print()
+    require_configuration()
+    agentcore = boto3.client("bedrock-agentcore", region_name=AWS_REGION)
+    first_runtime_session = f"runtime-{uuid.uuid4()}"
+    second_runtime_session = f"runtime-{uuid.uuid4()}"
 
-    # Invocation 1: Set context (flight destination)
-    trace_1 = invoke_agent(
-        ACTOR_ID, SESSION_ID,
-        "I need to book a flight to Seattle next Monday.",
-        1,
+    first_response = invoke(
+        agentcore,
+        f"Check retail order {ORDER_ID} with the read-only tool and remember that Salesforce case {EXPECTED_TERM} concerns partner portal access.",
+        first_runtime_session,
     )
-
-    # Invocation 2: Retrieve context (same actorId + sessionId)
-    # The agent should recall "Seattle" from the first invocation
-    trace_2 = invoke_agent(
-        ACTOR_ID, SESSION_ID,
-        "What is my destination?",
-        2,
+    if ORDER_ID.lower() not in first_response.lower() or EXPECTED_ORDER_STATUS.lower() not in first_response.lower():
+        raise SystemExit("TOOL_FAILED: Runtime response did not contain the expected order and status")
+    print("TOOL_OK: Runtime invoked the expected read-only retail tool")
+    second_response = invoke(
+        agentcore,
+        "Which Salesforce case did I ask you to remember?",
+        second_runtime_session,
     )
+    if EXPECTED_TERM not in second_response:
+        raise SystemExit(f"CONTINUITY_FAILED: second response did not contain {EXPECTED_TERM}")
 
-    print(f"\n{'─' * 50}")
-    print("\n  Verification complete!")
-    print(f"\n  Trace IDs for CloudWatch inspection:")
-    print(f"    Invocation 1: {trace_1}")
-    print(f"    Invocation 2: {trace_2}")
-    print(f"\n  CloudWatch path:")
-    print(f"    CloudWatch → Generative AI Observability → AgentCore")
-    print(f"    Filter by session ID: {SESSION_ID}")
-    print(f"\n  Signals to record:")
-    print(f"    - Total request duration (agent.run span)")
-    print(f"    - Token usage (input + output per LLM call)")
-    print(f"    - Tool invocations (which tools, how long)")
-    print(f"    - Memory operations (reads/writes)")
-    print(f"    - Errors (if any)")
+    events = wait_for_memory_events(agentcore)
+    print(f"MEMORY_OK: actor_id={ACTOR_ID} memory_session_id={MEMORY_SESSION_ID} events={len(events)}")
+    print("CONTINUITY_OK: different Runtime sessions retrieved the same Memory session")
+    print("Next: use the printed Runtime session IDs to find the corresponding CloudWatch traces.")
 
 
 if __name__ == "__main__":

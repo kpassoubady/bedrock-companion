@@ -26,4 +26,4 @@ AgentCore Identity maps directly to the mitigation of critical risks outlined in
 - **ASI01: Agent Goal Hijack:** Prompt injections can redirect an agent's plan. Deterministic IAM policies and scoped tokens prevent a hijacked agent from accessing unauthorized resources.
 - **ASI10: Rogue Agents:** Excess autonomy is contained by enforcing capability manifests, egress network restrictions, and strict credential expiration.
 
-Remember: **Deterministic external controls are the starting point for agentic security.** Do not rely on natural language prompts (e.g., "do not delete this database") for access control. Use IAM policies, scoped tokens, and approval gates to enforce security boundaries mathematically.
+Remember: **Deterministic external controls are the starting point for agentic security.** Do not rely on natural language prompts (e.g., "do not delete this database") for access control. Use reviewed IAM policies, scoped tokens, and approval gates to enforce boundaries outside the model.

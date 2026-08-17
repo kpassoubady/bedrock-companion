@@ -6,8 +6,8 @@ Production agent systems require state to act intelligently over time, and obser
 
 AgentCore Memory allows agents to maintain context across conversational turns and discrete sessions. It is fundamentally divided into two types:
 
-1. **Short-Term Memory:** This captures the active, ephemeral dialogue within a single session. It maintains coherence during a specific task but does not persist once the session expires.
-2. **Long-Term Memory:** This state persists across sessions, allowing the agent to remember facts, preferences, and past events indefinitely.
+1. **Short-Term Memory:** Stored events grouped by `actorId` and `sessionId`. Event retention and deletion follow the Memory configuration and application governance; session completion does not imply immediate deletion.
+2. **Long-Term Memory:** Extracted records that can span sessions. Their lifecycle is controlled by strategies, namespaces, retention, and deletion policy rather than assumed indefinite storage.
 
 ### Five Long-Term Memory Strategies
 
@@ -21,7 +21,7 @@ AgentCore provides five configurable strategies for extracting durable knowledge
 
 ### Actor and Session Scoping
 
-Memory is intrinsically tied to identity. AgentCore Memory uses an `actorId` and a `sessionId` to partition data. Long-term retrieval is filtered by the `actorId` automatically, ensuring that one user's agent does not retrieve another user's stored preferences.
+AgentCore Memory uses an `actorId` and a `sessionId` to organize events. Long-term records also use configured namespaces. These identifiers are partition keys, not authorization controls; the application and IAM/resource policies must prevent a caller from selecting another actor or tenant namespace.
 
 ### The Shared Responsibility Boundary for Memory
 
@@ -44,9 +44,9 @@ Key signals in a trace include:
 
 Without comprehensive observability, defending against agent compromise is impossible. Traces provide the forensic evidence necessary to reconstruct the agent's decision-making process. Note that trace payloads can contain sensitive prompts and tool arguments, so redaction must occur at write time to prevent logs from becoming an attack surface.
 
-## Security Implications: OWASP ASI06 and ASI09
+## Security Implications
 
-This architecture directly addresses two critical risks from the **OWASP Top 10 for Agentic Applications (2026)**:
+This architecture addresses memory poisoning from the **OWASP Top 10 for Agentic Applications (2026)** and supports broader detection and response controls:
 
 - **ASI06: Memory & Context Poisoning:** An agent's stored state influences its future reasoning. A known attack, *MemoryTrap*, demonstrated that untrusted input (like a compromised GitHub repo) could be written to an agent's memory, eventually altering its system-level behavior in future sessions. Treat memory as an attack vector. Only promote trusted data to long-term memory, and maintain audit trails of memory writes.
-- **ASI09: Insufficient Observability:** This is a meta-category describing the absence of visibility. If you cannot see every reasoning step, tool invocation, and state transition, you cannot detect when ASI01 (Goal Hijack) or ASI06 (Memory Poisoning) occurs. Telemetry must be comprehensive and immutable.
+- **Observable execution:** ASI09 is Human-Agent Trust Exploitation, not an observability category. Comprehensive, access-controlled telemetry still helps detect goal hijacking, memory poisoning, tool misuse, and cascading failures.
