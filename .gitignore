@@ -1,6 +1,9 @@
 node_modules/
 .DS_Store
 .env
+deploy.env
 dist/
 build/
 __pycache__/
+.venv/
+outputs/
