@@ -29,6 +29,11 @@ Work in pairs. One person drives for deployment and Gateway checks; switch drive
 
 ## Prerequisites
 
+**Open in Colab:**
+
+[![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/kpassoubady/bedrock-companion/blob/main/day1/labs/05-operating-the-environment/start/05-operating-the-environment.ipynb)
+
+
 - Python 3.10 or later
 - AWS CLI configured for the assigned sandbox
 - Packages installed with `python3 -m pip install -r requirements.txt`
