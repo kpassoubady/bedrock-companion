@@ -86,72 +86,26 @@ def agentcore_client():
 
 def call_gateway_tool(order_id: str) -> str:
     """Invoke the Gateway's order-status MCP tool with the Runtime's own SigV4 identity."""
-    payload = {
-        "jsonrpc": "2.0",
-        "id": str(uuid.uuid4()),
-        "method": "tools/call",
-        "params": {"name": GATEWAY_TOOL_NAME, "arguments": {"orderId": order_id}},
-    }
-    body = json.dumps(payload).encode("utf-8")
-    credentials = boto3.Session(region_name=AWS_REGION).get_credentials()
-    request = AWSRequest(
-        method="POST",
-        url=GATEWAY_URL,
-        data=body,
-        headers={
-            "Content-Type": "application/json",
-            "Accept": "application/json",
-            "MCP-Protocol-Version": "2025-03-26",
-        },
+    raise NotImplementedError(
+        "TODO 1: Implement the tool call using boto3 SigV4Auth and urllib.request. "
+        "The request should hit GATEWAY_URL with the GATEWAY_TOOL_NAME. "
+        "Return the resulting text or JSON string."
     )
-    SigV4Auth(credentials.get_frozen_credentials(), "bedrock-agentcore", AWS_REGION).add_auth(request)
-    urllib_request = urllib.request.Request(
-        GATEWAY_URL, data=body, headers=dict(request.headers.items()), method="POST"
-    )
-    with urllib.request.urlopen(urllib_request, timeout=20) as response:
-        result = json.loads(response.read().decode("utf-8"))
-    if "error" in result:
-        return json.dumps({"error": result["error"]})
-    content = result.get("result", {}).get("content", [])
-    texts = [item["text"] for item in content if item.get("type") == "text"]
-    return "\n".join(texts) if texts else json.dumps(result.get("result", {}))
 
 
 def load_memory_turns(actor_id: str, session_id: str):
     """Return prior conversation turns for this actor/session as Converse messages."""
-    if not MEMORY_ID:
-        return []
-    response = agentcore_client().list_events(
-        memoryId=MEMORY_ID,
-        actorId=actor_id,
-        sessionId=session_id,
-        includePayloads=True,
-        maxResults=100,
+    raise NotImplementedError(
+        "TODO 2: Call agentcore.list_events to fetch the conversation history for "
+        "the given actorId and sessionId from MEMORY_ID, and return it formatted "
+        "for the Bedrock Converse API."
     )
-    events = sorted(response.get("events", []), key=lambda e: e.get("eventTimestamp", 0))
-    messages = []
-    for event in events:
-        for item in event.get("payload", []):
-            turn = item.get("conversational")
-            if not turn:
-                continue
-            text = turn.get("content", {}).get("text", "")
-            role = turn.get("role", "USER")
-            if not text:
-                continue
-            messages.append({"role": "user" if role == "USER" else "assistant", "content": [{"text": text}]})
-    return messages
 
 
 def write_memory_turn(actor_id: str, session_id: str, role: str, text: str) -> None:
-    if not MEMORY_ID:
-        return
-    agentcore_client().create_event(
-        memoryId=MEMORY_ID,
-        actorId=actor_id,
-        sessionId=session_id,
-        eventTimestamp=time.time(),
-        payload=[{"conversational": {"content": {"text": text}, "role": role}}],
+    raise NotImplementedError(
+        "TODO 3: Call agentcore.create_event to store the conversation turn "
+        "in MEMORY_ID with the given actorId, sessionId, role, and text."
     )
 
 

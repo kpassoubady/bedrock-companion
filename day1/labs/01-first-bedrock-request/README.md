@@ -1,19 +1,32 @@
-# Lab 01: Send Your First Amazon Bedrock Request
+# Optional Lab: Send Your First Amazon Bedrock Request
 
-## Objectives
+This optional breakout exercise introduces the basic connection to Amazon Bedrock using the OpenAI-compatible Python SDK. It validates that your environment can communicate with the assigned models.
 
-By the end of this lab you will be able to:
+## Scenario and Goal
 
-1. Configure the regional Amazon Bedrock OpenAI-compatible endpoint.
-2. Send a Chat Completions request through the OpenAI Python SDK.
-3. Validate prompts and reject empty model responses.
-4. Keep credentials out of notebook source and output.
+You are setting up the foundational connection for a new agentic application. Before building complex orchestration or memory management, you must verify that your AWS credentials allow invocation of the assigned model in the target Region.
 
-## Setup
+**Goal:** Send a basic chat completions request to Amazon Bedrock and handle empty responses gracefully, ensuring your API key is never exposed.
 
-You need an instructor-approved AWS Region where `openai.gpt-oss-20b-1:0` is available and a short-term Amazon Bedrock API key. The notebook prompts for the key with `getpass`, so its value is not displayed or stored in the notebook.
+## Time Budget
 
-To run locally, activate your Python environment before opening Jupyter:
+| Activity | Minutes |
+| :--- | ---: |
+| Review environment and prerequisites | 3 |
+| Implement the prompt validation and API call | 7 |
+| Run acceptance checks and live validation | 5 |
+| **Total** | **15** |
+
+Work individually or in pairs.
+
+## Prerequisites
+
+- Python 3.10 or later
+- Local Jupyter notebook or Google Colab access
+- An instructor-approved AWS Region where `openai.gpt-oss-20b-1:0` is available
+- A short-term Amazon Bedrock API key
+
+To run locally, activate your Python environment:
 
 ```bash
 # macOS / Linux
@@ -23,22 +36,36 @@ source .venv/bin/activate
 .venv\Scripts\Activate.ps1
 ```
 
-Install the local dependencies if needed:
-
+Install dependencies:
 ```bash
 python3 -m pip install -r requirements.txt
 ```
 
-## Instructions
+## Checkpoint 1: Implement the Logic
 
-1. Open `start/01-first-bedrock-request.ipynb` in Google Colab or locally in Jupyter.
-2. Read each markdown cell for context.
-3. Find the `# TODO` comments and implement the required code.
-4. Run each cell in order, confirm the offline acceptance check passes, and then send one live request.
-5. Verify the notebook prints a non-empty answer and `MODEL_RESPONSE_OK model=openai.gpt-oss-20b-1:0`.
+Open `start/01-first-bedrock-request.ipynb` in your environment. Find the `# TODO` comments and implement the missing code in the `ask_bedrock` function.
+
+1. Reject a blank prompt.
+2. Call the injected OpenAI client's `chat.completions.create` exactly once.
+3. Strip any `<reasoning>` block from the output.
+4. Raise a RuntimeError if the resulting text is empty.
+
+**Developer Prompt:**
+
+If you are using a coding assistant, you can use the following prompt to help solve the TODOs:
+
+```text
+Complete the ask_bedrock function in 01-first-bedrock-request.ipynb. 
+It must reject a blank prompt, call the injected OpenAI client's chat.completions.create 
+exactly once, strip any <reasoning> block from the output, and raise a RuntimeError 
+if the resulting text is empty. Do not change the function signature.
+```
+
+## Checkpoint 2: Validate and Run
+
+Run each cell in order. First, confirm the offline acceptance check passes. Then, run the live cell to test your credentials.
 
 **Run command (local Jupyter):**
-
 ```bash
 jupyter notebook start/01-first-bedrock-request.ipynb
 ```
@@ -47,19 +74,26 @@ jupyter notebook start/01-first-bedrock-request.ipynb
 
 [![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/kpassoubady/bedrock-companion/blob/main/day1/labs/01-first-bedrock-request/start/01-first-bedrock-request.ipynb)
 
+## Definition of Done
+
+- The offline `test_ask_bedrock` assertions pass.
+- A non-empty answer is printed from the live Bedrock service.
+- The marker `MODEL_RESPONSE_OK model=openai.gpt-oss-20b-1:0` appears in your output.
+- No credentials exist in the source code or notebook output.
+
+## Share-Out
+
+Review your implementation and discuss:
+- Why is it important to filter `<reasoning>` blocks before displaying the response to an end-user?
+- What AWS credential mechanism would you use in production instead of manually distributing API keys?
+
 ## Credential Safety
 
 Use only a short-term lab key. Enter it only when the notebook prompts for it. Do not place it in source code, notebook text, screenshots, chat, or committed output. Restart the Colab runtime or Jupyter kernel after the lab to clear the in-memory key.
 
-In production, prefer an IAM role or temporary AWS credentials with a supported token-refresh or AWS SDK authentication flow instead of manually distributing API keys.
-
 ## Getting Stuck?
 
-The `solution/` directory contains a fully working reference notebook. Try each TODO on your own first, then compare with the solution.
-
-Common live-call failures come from an incorrect Region, an expired key, unavailable model access, or a malformed regional endpoint. Preserve the exact error while troubleshooting, but never share the key.
-
-## References
-
-- [Amazon Bedrock quickstart](https://docs.aws.amazon.com/bedrock/latest/userguide/getting-started.html)
-- [OpenAI gpt-oss-20b model card](https://docs.aws.amazon.com/bedrock/latest/userguide/model-card-openai-gpt-oss-20b.html)
+1. Ensure your AWS Region supports the specified model.
+2. Check that your API key is not expired.
+3. Verify the regional endpoint URL is properly formed.
+4. Compare your approach with `solution/01-first-bedrock-request.ipynb` in the repository.

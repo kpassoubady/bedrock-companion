@@ -18,12 +18,13 @@ Produce evidence for five boundaries:
 | :--- | ---: |
 | Read the architecture and run preflight | 5 |
 | Compare the broad and restricted policies | 5 |
+| Implement the agent logic | 10 |
 | Deploy or update the assigned Runtime | 8 |
 | Check the retail Gateway tool | 5 |
 | Verify Salesforce case continuity in Memory | 8 |
 | Inspect the trace and record evidence | 9 |
 | Production-boundary share-out and buffer | 5 |
-| **Total** | **45** |
+| **Total** | **55** |
 
 Work in pairs. One person drives for deployment and Gateway checks; switch drivers before the Memory and trace checks.
 
@@ -79,7 +80,7 @@ The instructor sent you a presigned S3 link to `team-XX.env` (see `bedrock-lab-p
    **Do not re-export `EXECUTION_ROLE_ARN` or `S3_BUCKET`.** `team-XX.env` already set them correctly for your team. Re-exporting them from any other source — including an old copy of this doc's example values — overwrites the real role/bucket with a placeholder and Checkpoint 1 fails with `AccessDenied`.
 
    `GATEWAY_TOOL_NAME` looks unusual — it is the target name and the tool name joined with three underscores, e.g. `LabAgent-TeamXX-OrderStatusTarget___OrderStatus_TeamXX`. AgentCore Gateway namespaces every Lambda-backed tool this way in `tools/list` and `tools/call`; the shorter name registered when the tool was created is never callable on its own. Use the exact value the instructor gives you — do not shorten it.
-5. The console sign-in block appended at the end of `team-XX.env` is for Checkpoint 5 (CloudWatch trace inspection). You won't need it until then.
+5. The console sign-in block appended at the end of `team-XX.env` is for Checkpoint 6 (CloudWatch trace inspection). You won't need it until then.
 
 Set `AGENT_RUNTIME_ID` when updating an assigned Runtime. After deployment, export the actual `AGENT_RUNTIME_ARN` printed by the script.
 
@@ -96,7 +97,25 @@ Confirm `AgentCoreExecutionPolicy` is listed and its document scopes the role to
 
 If `AgentCoreExecutionPolicy` is missing, ask the instructor to re-run provisioning for your team — students are not granted `iam:PutRolePolicy` on this role, so you cannot attach or repair it yourself.
 
-## Checkpoint 2: Deploy or Update
+## Checkpoint 2: Implement the Agent Logic
+
+Before deploying, open `start/agent.py` and complete the three TODOs:
+
+1. `call_gateway_tool`: Invoke the Gateway MCP tool using SigV4Auth and urllib.request.
+2. `load_memory_turns`: Retrieve conversation history from AgentCore Memory using `agentcore.list_events`.
+3. `write_memory_turn`: Write new messages to AgentCore Memory using `agentcore.create_event`.
+
+**Developer Prompt:**
+
+If you are using a coding assistant, you can use the following prompt to help solve the TODOs:
+
+```text
+Complete the three TODOs in start/agent.py. Use boto3 SigV4Auth and urllib.request 
+for the Gateway tool call. Use the bedrock-agentcore boto3 client for list_events and 
+create_event. Ensure the returned memory turns are formatted correctly for the Bedrock Converse API.
+```
+
+## Checkpoint 3: Deploy or Update
 
 ```bash
 cd start
@@ -123,7 +142,7 @@ source deploy.env
 
 Re-running `deploy_agent.py` for the same `AGENT_NAME` finds and updates the existing Runtime automatically — you do not need to export `AGENT_RUNTIME_ID` yourself first.
 
-## Checkpoint 3: Invoke the Retail Gateway Tool
+## Checkpoint 4: Invoke the Retail Gateway Tool
 
 ```bash
 python3 check_gateway.py
@@ -137,7 +156,7 @@ GATEWAY_OK
 
 The script signs a direct MCP `tools/call` checkpoint with the current student IAM identity. It validates the JSON-RPC request ID, rejects top-level and `isError` failures, and requires both `ORD-1001` and the expected status. This checkpoint tests Gateway independently before Runtime uses the same tool.
 
-## Checkpoint 4: Verify AgentCore Memory
+## Checkpoint 5: Verify AgentCore Memory
 
 ```bash
 python3 verify_memory.py
@@ -156,7 +175,7 @@ The first Runtime invocation calls the retail order tool and writes Salesforce c
 
 Actor and session IDs organize Memory data. They are not authorization controls by themselves; the application and IAM policy must prevent identifier spoofing.
 
-## Checkpoint 5: Inspect CloudWatch
+## Checkpoint 6: Inspect CloudWatch
 
 Open **CloudWatch > GenAI Observability > Amazon Bedrock AgentCore > Traces**. Use the Runtime session IDs printed by `verify_memory.py` and record:
 
@@ -208,4 +227,4 @@ For awareness only — do not run this as a block. Doing so re-exports placehold
 | `AWS_ACCESS_KEY_ID`, `AWS_SECRET_ACCESS_KEY`, `AWS_DEFAULT_REGION` | `team-XX.env` |
 | `EXECUTION_ROLE_ARN`, `S3_BUCKET` | `team-XX.env` — never re-export |
 | `AWS_REGION`, `AGENT_NAME`, `S3_KEY`, `GATEWAY_URL`, `GATEWAY_TOOL_NAME`, `MEMORY_ID`, `ACTOR_ID`, `MEMORY_SESSION_ID`, `ORDER_ID`, `EXPECTED_ORDER_STATUS` | Instructor-provided; exported by you in "Load Your Team Credentials" |
-| `AGENT_RUNTIME_ID`, `AGENT_RUNTIME_ARN` | Empty until deployment; `AGENT_RUNTIME_ARN` set from the script's printed output after Checkpoint 2 |
+| `AGENT_RUNTIME_ID`, `AGENT_RUNTIME_ARN` | Empty until deployment; `AGENT_RUNTIME_ARN` set from the script's printed output after Checkpoint 3 |
