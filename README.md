@@ -35,7 +35,7 @@ The `day1/concepts/` directory contains dense reference documents for each sessi
 
 ## Labs
 
-- `day1/labs/01-first-bedrock-request/` sends a first inference request through Amazon Bedrock's OpenAI-compatible Responses API.
+- `day1/labs/01-first-bedrock-request/` sends a first inference request through Amazon Bedrock's OpenAI-compatible Chat Completions API.
 - `day1/labs/05-operating-the-environment/` deploys and inspects a governed agent on AgentCore Runtime.
 
 Each lab directory contains its own setup and completion instructions.
