@@ -13,10 +13,14 @@ day1/
 │   ├── 04-state-visibility-memory-observability.md
 │   └── 06-best-practices-wrap-up.md
 └── labs/
+    ├── 01-first-bedrock-request/       # Introductory lab (20 min)
+    │   ├── README.md
+    │   ├── start/       # TODO stubs for students
+    │   └── solution/    # Complete working examples
     └── 05-operating-the-environment/   # Breakout lab (45 min)
         ├── README.md
-        ├── start/       # TODO stubs for students
-        └── solution/    # Complete working examples
+        ├── start/
+        └── solution/
 ```
 
 ## Concept Docs
@@ -29,11 +33,13 @@ The `day1/concepts/` directory contains dense reference documents for each sessi
 - **04 — Memory & Observability:** Memory types and strategies, trace span hierarchy, OWASP ASI06/ASI09
 - **06 — Best Practices:** Cost management, runaway execution prevention, EDDOps, five production practices
 
-## Lab
+## Labs
 
-The breakout lab (`day1/labs/05-operating-the-environment/`) walks students through deploying a governed agent on AgentCore Runtime. See the [lab README](day1/labs/05-operating-the-environment/README.md) for instructions.
+- `day1/labs/01-first-bedrock-request/` sends a first inference request through Amazon Bedrock's OpenAI-compatible Responses API.
+- `day1/labs/05-operating-the-environment/` deploys and inspects a governed agent on AgentCore Runtime.
+
+Each lab directory contains its own setup and completion instructions.
 
 ## Related Repositories
 
 - [bedrock-setup](https://github.com/kpassoubady/bedrock-setup) — Pre-class environment verification and installation steps.
-- [bedrock](https://github.com/kpassoubady/bedrock) — Primary course repository (slides, demos, diagrams, catalog).

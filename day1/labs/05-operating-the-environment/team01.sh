@@ -1,4 +1,4 @@
-export AWS_REGION=us-west-2
+export AWS_REGION=us-east-1
 export AGENT_NAME=sf_case_team01_am
 export AGENT_RUNTIME_ID=
 export AGENT_RUNTIME_ARN=

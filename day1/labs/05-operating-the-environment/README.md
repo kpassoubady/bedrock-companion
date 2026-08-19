@@ -37,48 +37,59 @@ Work in pairs. One person drives for deployment and Gateway checks; switch drive
 
 Do not use real Salesforce records, customer identifiers, or order data. The supplied targets return synthetic fixtures.
 
-## Configuration
+## Load Your Team Credentials
 
-Export the values supplied by the instructor. Use a cohort-specific suffix such as `_am` or `_pm` to prevent collisions.
+The instructor sent you a presigned S3 link to `team-XX.env` (see `bedrock-lab-provision`'s `docs/credential-distribution.md` for how it was sent). This section is the only place you export environment variables — complete all of it before Checkpoint 1.
 
-```bash
-export AWS_REGION=us-west-2
-export AGENT_NAME=sf_case_team01_am
-export EXECUTION_ROLE_ARN=arn:aws:iam::123456789012:role/assigned-runtime-role
-export RESTRICTED_POLICY_ARN=arn:aws:iam::123456789012:policy/assigned-runtime-policy
-export S3_BUCKET=assigned-agentcore-artifacts
-export S3_KEY=course/agent/deployment_package.zip
-export GATEWAY_URL=https://assigned-gateway.example.gateway.bedrock-agentcore.us-east-1.amazonaws.com/mcp
-export GATEWAY_TOOL_NAME=retail___get_order_status
-export MEMORY_ID=assigned-memory-id
-export ACTOR_ID=team01_am
-export MEMORY_SESSION_ID=sf-case-team01-am
-export ORDER_ID=ORD-1001
-export EXPECTED_ORDER_STATUS=SHIPPED
-# keep empty the below 2 values
-export AGENT_RUNTIME_ID=
-export AGENT_RUNTIME_ARN=
-```
+1. Save `team-XX.env` outside this repo — for example, your home directory. Never copy it into `bedrock-companion`: this repo's `.gitignore` only ignores a file literally named `.env`, so `team-XX.env` would not be excluded and is one `git add` away from being committed with a live AWS access key, secret key, and console password.
+2. Load it into your shell:
 
-`AGENT_NAME` may contain only letters, digits, and underscores and must start with a letter. Set `AGENT_RUNTIME_ID` when updating an assigned Runtime. After deployment, export the actual `AGENT_RUNTIME_ARN` printed by the script.
+   ```bash
+   source ~/team-XX.env
+   ```
+
+3. Confirm the credentials are active and belong to your team:
+
+   ```bash
+   aws sts get-caller-identity
+   ```
+
+4. `team-XX.env` sets `AWS_DEFAULT_REGION`, but the scripts in this lab read `AWS_REGION` specifically. Export it too so the two agree, and export the remaining values the instructor gives you separately — `team-XX.env` does not include these:
+
+   ```bash
+   export AWS_REGION=us-east-1
+   export AGENT_NAME=sf_case_team01_am   # letters, digits, underscores only; append _am/_pm if the instructor asks
+   export S3_KEY=<instructor-provided>
+   export GATEWAY_URL=<instructor-provided>
+   export GATEWAY_TOOL_NAME=<instructor-provided>
+   export MEMORY_ID=<instructor-provided>
+   export ACTOR_ID=<instructor-provided>
+   export MEMORY_SESSION_ID=<instructor-provided>
+   export ORDER_ID=<instructor-provided>
+   export EXPECTED_ORDER_STATUS=<instructor-provided>
+   export AGENT_RUNTIME_ID=
+   export AGENT_RUNTIME_ARN=
+   ```
+
+   **Do not re-export `EXECUTION_ROLE_ARN` or `S3_BUCKET`.** `team-XX.env` already set them correctly for your team. Re-exporting them from any other source — including an old copy of this doc's example values — overwrites the real role/bucket with a placeholder and Checkpoint 1 fails with `AccessDenied`.
+
+   `GATEWAY_TOOL_NAME` looks unusual — it is the target name and the tool name joined with three underscores, e.g. `LabAgent-TeamXX-OrderStatusTarget___OrderStatus_TeamXX`. AgentCore Gateway namespaces every Lambda-backed tool this way in `tools/list` and `tools/call`; the shorter name registered when the tool was created is never callable on its own. Use the exact value the instructor gives you — do not shorten it.
+5. The console sign-in block appended at the end of `team-XX.env` is for Checkpoint 5 (CloudWatch trace inspection). You won't need it until then.
+
+Set `AGENT_RUNTIME_ID` when updating an assigned Runtime. After deployment, export the actual `AGENT_RUNTIME_ARN` printed by the script.
 
 ## Checkpoint 1: Identity and Policy
 
 ```bash
 aws sts get-caller-identity
 aws iam get-role --role-name "${EXECUTION_ROLE_ARN##*/}"
-aws iam list-attached-role-policies --role-name "${EXECUTION_ROLE_ARN##*/}"
+aws iam list-role-policies --role-name "${EXECUTION_ROLE_ARN##*/}"
+aws iam get-role-policy --role-name "${EXECUTION_ROLE_ARN##*/}" --policy-name AgentCoreExecutionPolicy
 ```
 
-Confirm that `RESTRICTED_POLICY_ARN` is attached. The Runtime role needs only the assigned model, Gateway, Memory, and telemetry actions. The lab invoker needs both `bedrock-agentcore:InvokeAgentRuntime` and `bedrock-agentcore:InvokeAgentRuntimeForUser` because the checkpoint supplies `runtimeUserId`. `bedrock-agentcore:InvokeGateway` applies to a Gateway; `bedrock-agentcore:InvokeAgentRuntime` applies to a Runtime.
+Confirm `AgentCoreExecutionPolicy` is listed and its document scopes the role to only the assigned model, Gateway, Memory, and telemetry actions. Provisioning attaches this as an inline role policy, not a managed one — `aws iam list-attached-role-policies` will always return an empty list for this role by design, so it does not confirm anything here. The lab invoker needs both `bedrock-agentcore:InvokeAgentRuntime` and `bedrock-agentcore:InvokeAgentRuntimeForUser` because the checkpoint supplies `runtimeUserId`. `bedrock-agentcore:InvokeGateway` applies to a Gateway; `bedrock-agentcore:InvokeAgentRuntime` applies to a Runtime.
 
-If the supplied policy is not attached, use the instructor-approved command:
-
-```bash
-aws iam attach-role-policy \
-  --role-name "${EXECUTION_ROLE_ARN##*/}" \
-  --policy-arn "$RESTRICTED_POLICY_ARN"
-```
+If `AgentCoreExecutionPolicy` is missing, ask the instructor to re-run provisioning for your team — students are not granted `iam:PutRolePolicy` on this role, so you cannot attach or repair it yourself.
 
 ## Checkpoint 2: Deploy or Update
 
@@ -98,6 +109,14 @@ AGENT_RUNTIME_ARN=...
 ```
 
 The script validates the S3 ZIP, performs a real create or update, waits up to five minutes, and exits nonzero on failure. `update_agent_runtime` moves `DEFAULT` to the new version automatically, so this classroom path is permitted only in the assigned sandbox. Production promotion uses named endpoints and `update_agent_runtime_endpoint` after evaluation.
+
+The script also writes `deploy.env` in the current directory with `AGENT_RUNTIME_ID`, `AGENT_RUNTIME_VERSION`, and `AGENT_RUNTIME_ARN` from this run. Load it instead of copy-pasting the printed values:
+
+```bash
+source deploy.env
+```
+
+Re-running `deploy_agent.py` for the same `AGENT_NAME` finds and updates the existing Runtime automatically — you do not need to export `AGENT_RUNTIME_ID` yourself first.
 
 ## Checkpoint 3: Invoke the Retail Gateway Tool
 
@@ -174,3 +193,14 @@ acceptance criterion your smallest proposed correction restores.
 3. Ask your partner, then another group.
 4. Ask the instructor for the known-good checkpoint output.
 5. Compare with `solution/` without copying unrelated changes.
+
+## Reference: Environment Variables
+
+For awareness only — do not run this as a block. Doing so re-exports placeholder values over the real ones from `team-XX.env` and breaks the checkpoints.
+
+| Variable | Source |
+| :--- | :--- |
+| `AWS_ACCESS_KEY_ID`, `AWS_SECRET_ACCESS_KEY`, `AWS_DEFAULT_REGION` | `team-XX.env` |
+| `EXECUTION_ROLE_ARN`, `S3_BUCKET` | `team-XX.env` — never re-export |
+| `AWS_REGION`, `AGENT_NAME`, `S3_KEY`, `GATEWAY_URL`, `GATEWAY_TOOL_NAME`, `MEMORY_ID`, `ACTOR_ID`, `MEMORY_SESSION_ID`, `ORDER_ID`, `EXPECTED_ORDER_STATUS` | Instructor-provided; exported by you in "Load Your Team Credentials" |
+| `AGENT_RUNTIME_ID`, `AGENT_RUNTIME_ARN` | Empty until deployment; `AGENT_RUNTIME_ARN` set from the script's printed output after Checkpoint 2 |
