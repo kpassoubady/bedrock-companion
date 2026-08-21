@@ -18,13 +18,13 @@ Produce evidence for five boundaries:
 | :--- | ---: |
 | Read the architecture and run preflight | 5 |
 | Compare the broad and restricted policies | 5 |
-| Implement the agent logic | 10 |
-| Deploy or update the assigned Runtime | 8 |
+| Implement the agent logic | 5 |
+| Deploy or update the assigned Runtime | 5 |
 | Check the retail Gateway tool | 5 |
-| Verify Salesforce case continuity in Memory | 8 |
-| Inspect the trace and record evidence | 9 |
+| Verify Salesforce case continuity in Memory | 5 |
+| Inspect the trace and record evidence | 5 |
 | Production-boundary share-out and buffer | 5 |
-| **Total** | **55** |
+| **Total** | **45** |
 
 Work in pairs. One person drives for deployment and Gateway checks; switch drivers before the Memory and trace checks.
 
