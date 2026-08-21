@@ -14,7 +14,7 @@ import boto3
 AWS_REGION = os.environ.get("AWS_REGION", "us-east-1")
 AGENT_RUNTIME_ARN = os.environ.get("AGENT_RUNTIME_ARN", "")
 MEMORY_ID = os.environ.get("MEMORY_ID", "")
-ACTOR_ID = os.environ.get("ACTOR_ID", "")
+ACTOR_ID = os.environ.get("ACTOR_ID", f"actor-{uuid.uuid4()}")
 MEMORY_SESSION_ID = os.environ.get("MEMORY_SESSION_ID", f"memory-{uuid.uuid4()}")
 EXPECTED_TERM = os.environ.get("EXPECTED_TERM", "00001042")
 ORDER_ID = os.environ.get("ORDER_ID", "ORD-1001")
@@ -25,7 +25,6 @@ def require_configuration():
     required = {
         "AGENT_RUNTIME_ARN": AGENT_RUNTIME_ARN,
         "MEMORY_ID": MEMORY_ID,
-        "ACTOR_ID": ACTOR_ID,
     }
     missing = [name for name, value in required.items() if not value]
     if missing:
@@ -111,7 +110,6 @@ def main():
     events = wait_for_memory_events(agentcore)
     print(f"MEMORY_OK: actor_id={ACTOR_ID} memory_session_id={MEMORY_SESSION_ID} events={len(events)}")
     print("CONTINUITY_OK: different Runtime sessions retrieved the same Memory session")
-    print("Next: use the printed Runtime session IDs to find the corresponding CloudWatch traces.")
 
 
 if __name__ == "__main__":

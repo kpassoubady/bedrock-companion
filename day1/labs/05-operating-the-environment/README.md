@@ -10,7 +10,6 @@ Produce evidence for five boundaries:
 2. The restricted execution role is attached to that Runtime.
 3. A SigV4-signed call reaches the pre-created read-only Gateway tool.
 4. Two different Runtime sessions retrieve one AgentCore Memory session.
-5. CloudWatch shows the Runtime, model, tool, Memory, status, and latency evidence.
 
 ## Time Budget
 
@@ -22,8 +21,7 @@ Produce evidence for five boundaries:
 | Deploy or update the assigned Runtime | 5 |
 | Check the retail Gateway tool | 5 |
 | Verify Salesforce case continuity in Memory | 5 |
-| Inspect the trace and record evidence | 5 |
-| Production-boundary share-out and buffer | 5 |
+| Production-boundary share-out and buffer | 10 |
 | **Total** | **45** |
 
 Work in pairs. One person drives for deployment and Gateway checks; switch drivers before the Memory and trace checks.
@@ -38,7 +36,6 @@ Work in pairs. One person drives for deployment and Gateway checks; switch drive
 - Python 3.10 or later
 - AWS CLI configured for the assigned sandbox
 - Packages installed with `python3 -m pip install -r requirements.txt`
-- CloudWatch Transaction Search enabled before class
 - Instructor-provided Runtime artifact, Gateway, Memory, role, policy, and team-specific values
 
 Do not use real Salesforce records, customer identifiers, or order data. The supplied targets return synthetic fixtures.
@@ -69,8 +66,8 @@ The instructor sent you a presigned S3 link to `team-XX.env` (see `bedrock-lab-p
    export GATEWAY_URL=<instructor-provided>
    export GATEWAY_TOOL_NAME=<instructor-provided>
    export MEMORY_ID=<instructor-provided>
-   export ACTOR_ID=<instructor-provided>
-   export MEMORY_SESSION_ID=<instructor-provided>
+   export ACTOR_ID=<instructor-provided>   # optional — a random value is generated if unset
+   export MEMORY_SESSION_ID=<instructor-provided>  # optional — a random value is generated if unset
    export ORDER_ID=<instructor-provided>
    export EXPECTED_ORDER_STATUS=<instructor-provided>
    export AGENT_RUNTIME_ID=
@@ -175,20 +172,7 @@ The first Runtime invocation calls the retail order tool and writes Salesforce c
 
 Actor and session IDs organize Memory data. They are not authorization controls by themselves; the application and IAM policy must prevent identifier spoofing.
 
-## Checkpoint 6: Inspect CloudWatch
-
-Open **CloudWatch > GenAI Observability > Amazon Bedrock AgentCore > Traces**. Use the Runtime session IDs printed by `verify_memory.py` and record:
-
-| Signal | Evidence |
-| :--- | :--- |
-| Runtime status and total latency | |
-| Model and token data | |
-| Gateway tool name and status | |
-| Memory read/write activity | |
-| Output-validation result | |
-| Error or success status | |
-
-Trace ingestion can be delayed. If the live trace is not visible after the instructor's wait limit, use the instructor-provided redacted trace captured from the same lab version. Label fallback evidence clearly; do not claim it came from your invocation.
+> CloudWatch trace inspection is skipped for this class — students do not currently have console access. This checkpoint will return once that access is available.
 
 ## Definition of Done
 
@@ -196,7 +180,6 @@ Trace ingestion can be delayed. If the live trace is not visible after the instr
 - Restricted policy attached to the prepared role
 - `GATEWAY_OK` for the synthetic retail order
 - `CONTINUITY_OK` for the synthetic Salesforce case
-- Live or clearly labeled fallback trace evidence
 - One-minute explanation of controls still outside this lab: caller authorization, tenant mapping, approval for writes, idempotency, bounded retries, data deletion, staged rollout, rollback, budgets, and incident ownership
 
 ## Developer Prompt
@@ -226,5 +209,6 @@ For awareness only — do not run this as a block. Doing so re-exports placehold
 | :--- | :--- |
 | `AWS_ACCESS_KEY_ID`, `AWS_SECRET_ACCESS_KEY`, `AWS_DEFAULT_REGION` | `team-XX.env` |
 | `EXECUTION_ROLE_ARN`, `S3_BUCKET` | `team-XX.env` — never re-export |
-| `AWS_REGION`, `AGENT_NAME`, `S3_KEY`, `GATEWAY_URL`, `GATEWAY_TOOL_NAME`, `MEMORY_ID`, `ACTOR_ID`, `MEMORY_SESSION_ID`, `ORDER_ID`, `EXPECTED_ORDER_STATUS` | Instructor-provided; exported by you in "Load Your Team Credentials" |
+| `AWS_REGION`, `AGENT_NAME`, `S3_KEY`, `GATEWAY_URL`, `GATEWAY_TOOL_NAME`, `MEMORY_ID`, `ORDER_ID`, `EXPECTED_ORDER_STATUS` | Instructor-provided; exported by you in "Load Your Team Credentials" |
+| `ACTOR_ID`, `MEMORY_SESSION_ID` | Instructor-provided, but optional — `verify_memory.py` generates a random value if unset |
 | `AGENT_RUNTIME_ID`, `AGENT_RUNTIME_ARN` | Empty until deployment; `AGENT_RUNTIME_ARN` set from the script's printed output after Checkpoint 3 |
