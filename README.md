@@ -17,6 +17,9 @@ day1/
     │   ├── README.md
     │   ├── start/       # TODO stubs for students
     │   └── solution/    # Complete working examples
+    ├── 02-optional-lab-first-request/  # Optional Breakout lab
+    │   ├── README.md
+    │   └── ... (example scripts)
     └── 05-operating-the-environment/   # Breakout lab (45 min)
         ├── README.md
         ├── start/
@@ -36,6 +39,7 @@ The `day1/concepts/` directory contains dense reference documents for each sessi
 ## Labs
 
 - `day1/labs/01-first-bedrock-request/` sends a first inference request through Amazon Bedrock's OpenAI-compatible Chat Completions API.
+- `day1/labs/02-optional-lab-first-request/` demonstrates basic API connectivity (Invoke, Converse, Chat Completions) and model response handling within a retail customer support context.
 - `day1/labs/05-operating-the-environment/` deploys and inspects a governed agent on AgentCore Runtime.
 
 Each lab directory contains its own setup and completion instructions.
