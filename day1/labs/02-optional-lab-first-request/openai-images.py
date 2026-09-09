@@ -35,7 +35,7 @@ response = client.converse(
                 "format": image_format,
                 "source": {"bytes": image_bytes}
             }},
-            {"text": "What is in this image? Describe the product for a retail return case."}
+            {"text": "Write a one-sentence bedtime story inspired by this image."}
         ]
     }]
 )

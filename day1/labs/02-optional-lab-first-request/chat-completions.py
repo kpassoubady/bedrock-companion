@@ -18,7 +18,7 @@ response = client.chat.completions.create(
     model="us.openai.gpt-5.6-sol",
     messages=[{
         "role": "user",
-        "content": "Please summarize the following customer support case for a retail return:\n\nCustomer: I received the wrong size for my shoes (Order #12345). I ordered a size 10 but received a size 8.\nAction required: Summarize the issue and suggest the next steps for the agent.",
+        "content": "Write a one-sentence bedtime story about a unicorn.",
     }],
 )
 print(response.choices[0].message.content)

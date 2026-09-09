@@ -16,6 +16,6 @@ client = OpenAI(
 
 response = client.responses.create(
     model="us.openai.gpt-5.6-sol",
-    input="Please summarize the following customer support case for a retail return:\n\nCustomer: I received the wrong size for my shoes (Order #12345). I ordered a size 10 but received a size 8.\nAction required: Summarize the issue and suggest the next steps for the agent.",
+    input="Write a one-sentence bedtime story about a unicorn.",
 )
 print(response.output_text)
