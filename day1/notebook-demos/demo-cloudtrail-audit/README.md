@@ -9,4 +9,4 @@ This is a follow-along demo for students.
 
 **Open in Colab:**
 
-[![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/kpassoubady/bedrock-companion/blob/main/day1/demos/demo-cloudtrail-audit/demo-cloudtrail-audit.ipynb)
+[![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/kpassoubady/bedrock-companion/blob/main/day1/notebook-demos/demo-cloudtrail-audit/demo-cloudtrail-audit.ipynb)

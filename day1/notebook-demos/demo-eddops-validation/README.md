@@ -9,4 +9,4 @@ This is a follow-along demo for students.
 
 **Open in Colab:**
 
-[![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/kpassoubady/bedrock-companion/blob/main/day1/demos/demo-eddops-validation/demo-eddops-validation.ipynb)
+[![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/kpassoubady/bedrock-companion/blob/main/day1/notebook-demos/demo-eddops-validation/demo-eddops-validation.ipynb)

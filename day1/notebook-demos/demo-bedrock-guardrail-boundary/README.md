@@ -12,4 +12,4 @@ The notebook installs the course-pinned `boto3==1.43.62`. It uses `AWS_REGION` o
 
 **Open in Colab:**
 
-[![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/kpassoubady/bedrock-companion/blob/main/day1/demos/demo-bedrock-guardrail-boundary/demo-bedrock-guardrail-boundary.ipynb)
+[![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/kpassoubady/bedrock-companion/blob/main/day1/notebook-demos/demo-bedrock-guardrail-boundary/demo-bedrock-guardrail-boundary.ipynb)
