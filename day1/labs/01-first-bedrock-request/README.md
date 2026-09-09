@@ -87,6 +87,17 @@ Review your implementation and discuss:
 - Why is it important to filter `<reasoning>` blocks before displaying the response to an end-user?
 - What AWS credential mechanism would you use in production instead of manually distributing API keys?
 
+## Where to Get Your API Key
+
+The notebook prompts for a **short-term Amazon Bedrock API key** — this is not the same as the long-term IAM access key in your team's credentials file.
+
+1. Sign in to the AWS Console with your assigned lab credentials.
+2. Go to **Amazon Bedrock → API keys → Short-term API keys** tab, then click **Generate short-term API keys** (see `short-term-api-keys.png`).
+3. In the dialog that opens, click **Copy API Key** to copy the `bedrock-api-key-...` value (see `copy-short-term-api-keys.png`).
+4. Paste that value into the notebook's "Short-term Amazon Bedrock API key" prompt.
+
+The key expires after 12 hours (or when your console session ends), matching the "short-term" credential safety guidance below.
+
 ## Credential Safety
 
 Use only a short-term lab key. Enter it only when the notebook prompts for it. Do not place it in source code, notebook text, screenshots, chat, or committed output. Restart the Colab runtime or Jupyter kernel after the lab to clear the in-memory key.
