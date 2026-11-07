@@ -16,7 +16,7 @@ client = OpenAI(
 
 response = client.responses.create(
     model="us.openai.gpt-5.6-sol",
-    input="Write a one-sentence bedtime story about a unicorn."
+    input="Write a 20-line-sentence bedtime story about a unicorn."
 )
 
 print(response.output_text)
